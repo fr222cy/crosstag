@@ -2,20 +2,39 @@
 {% extends "base.html" %}
 
 {% block scripts %}
-<script>console.log("bar!")</script>
+
 {{super()}}
 {% endblock %}
 
 {% block content %}
 <br>
 <h1>Statistics</h1>
-<h2>Tag events in the last 2 months</h2>
-<div id="plot">
+
+<div>
+    <h2>Gender Statistics</h2>
+    <canvas id="genderChart" width="200" height="200"></canvas>
 </div>
 
+<div>
+    <h2>Tagevents gender</h2>
+    <canvas id="genderChart1" width="200" height="200"></canvas>
+</div>
+
+
+<script>
+    var chart = new statistic.Main();
+    chart.genderStats({{ data }});
+    chart.genderTags({{ data }});
+</script>
+
+
+{% endblock %}
+
+
+
+<!--
 <script>
 // Set up the plot window.
-
 var margin = 80;
 var width = 900 - 2 * margin, height = 500 - 2 * margin;
 
@@ -92,4 +111,6 @@ var callback = function (data) {
 };
 d3.json("/getrecentevents", callback);
 </script>
-{% endblock %}
+
+
+-->

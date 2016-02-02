@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import os
+from generateStatistics import generateStats
 from flask import Flask, jsonify, render_template, flash
 import json
 from flask.ext.sqlalchemy import SQLAlchemy
@@ -8,10 +10,13 @@ from wtforms import TextField, RadioField, DateField
 from wtforms.validators import Required
 from datetime import datetime, timedelta
 
+
+
 app = Flask(__name__)
 app.config.from_pyfile('config.py')
 db = SQLAlchemy(app)
 app_name = 'crosstag'
+
 
 
 class NewUser(Form):
@@ -228,6 +233,7 @@ def remove_user(index):
 
 @app.route('/add_new_user', methods=['GET', 'POST'])
 def add_new_user():
+
     form = NewUser()
     print(str(form.validate_on_submit()))
     print("errors", form.errors)
@@ -331,22 +337,34 @@ def get_tagevents_user_dict(user_index):
 
 @app.route('/statistics', methods=['GET'])
 def statistics():
-    return render_template('statistics.html', plot_paths='')
+
+    gs = generateStats()
+
+    users = User.query.all()
+
+    one_month = datetime.now() - timedelta(weeks=4)
+    one_month_events = Tagevent.query.filter(Tagevent.timestamp > one_month).all()
+
+    ret = gs.get_data(users, one_month_events)
+
+    return render_template('statistics.html',
+                           plot_paths='',
+                           data=ret)
 
 
 @app.route('/getrecenteventsgender', methods=['GET'])
 def get_recent_events_gender():
     three_months_ago = datetime.now() - timedelta(weeks=8)
-    events = Tagevent.query.filter(Tagevent.timestamp>three_months_ago).all()
+    events = Tagevent.query.filter(Tagevent.timestamp > three_months_ago).all()
     
-    events_json={}
+    events_json = {}
 
     for event in events:
-        current=str(event.timestamp.date())
+        current = str(event.timestamp.date())
         try:
-            gender=User.query.filter_by(tag_id=event.tag_id).first().gender
+            gender = User.query.filter_by(tag_id=event.tag_id).first().gender
         except: 
-            gender='unknown'
+            gender = 'unknown'
         
         genders.append(gender)
 
